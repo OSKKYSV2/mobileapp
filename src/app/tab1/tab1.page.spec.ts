@@ -1,13 +1,31 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SavedCounter } from '../models/saved-counter';
+import { CounterService } from '../services/counter.service';
 import { Tab1Page } from './tab1.page';
 
 describe('Tab1Page', () => {
   let component: Tab1Page;
   let fixture: ComponentFixture<Tab1Page>;
 
+  const addMock = vi.fn<(counter: SavedCounter) => Promise<void>>();
+
+  const counter: SavedCounter = {
+    id: 'first',
+    name: 'První',
+    value: 1,
+    createdAt: '2026-09-17T08:00:00.000Z',
+  };
+
   beforeEach(() => {
+    addMock.mockReset();
+    addMock.mockResolvedValue(undefined);
+
+    // Stránka nesmí sahat na úložiště, proto jí podstrčíme falešnou službu.
+    TestBed.configureTestingModule({
+      providers: [{ provide: CounterService, useValue: { add: addMock } }],
+    });
+
     fixture = TestBed.createComponent(Tab1Page);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -17,23 +35,10 @@ describe('Tab1Page', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should add the newest saved counter to the beginning', () => {
-    const first: SavedCounter = {
-      id: 'first',
-      name: 'První',
-      value: 1,
-      createdAt: '2026-09-17T08:00:00.000Z',
-    };
-    const second: SavedCounter = {
-      id: 'second',
-      name: 'Druhé',
-      value: 2,
-      createdAt: '2026-09-17T09:00:00.000Z',
-    };
+  it('should pass the saved counter to the service', async () => {
+    await component.onSaved(counter);
 
-    component.onSaved(first);
-    component.onSaved(second);
-
-    expect(component.savedCounters).toEqual([second, first]);
+    expect(addMock).toHaveBeenCalledTimes(1);
+    expect(addMock).toHaveBeenCalledWith(counter);
   });
 });
