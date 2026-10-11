@@ -41,4 +41,33 @@ describe('Tab1Page', () => {
     expect(addMock).toHaveBeenCalledTimes(1);
     expect(addMock).toHaveBeenCalledWith(counter);
   });
+
+  it('should not show a toast before anything is saved', () => {
+    expect(component.toastOpen()).toBe(false);
+    expect(fixture.nativeElement.querySelector('ion-toast')).not.toBeNull();
+  });
+
+  it('should show a success toast after the counter was saved', async () => {
+    await component.onSaved(counter);
+
+    expect(component.toastOpen()).toBe(true);
+    expect(component.toastColor()).toBe('success');
+    expect(component.toastMessage()).toBe('Počítadlo bylo uloženo.');
+  });
+
+  it('should show an error toast when saving fails', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    addMock.mockRejectedValue(new Error('storage unavailable'));
+
+    try {
+      await component.onSaved(counter);
+
+      expect(component.toastOpen()).toBe(true);
+      expect(component.toastColor()).toBe('danger');
+      expect(component.toastMessage()).toBe('Počítadlo se nepodařilo uložit.');
+      expect(errorSpy).toHaveBeenCalledTimes(1);
+    } finally {
+      errorSpy.mockRestore();
+    }
+  });
 });

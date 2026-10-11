@@ -19,7 +19,7 @@
       <p>Součet hodnot: <strong>{{ total() }}</strong></p>
     </div>
 
-    <ion-button color="danger" fill="outline" size="small" (click)="clear()">
+    <ion-button color="danger" fill="outline" size="small" (click)="requestClear()">
       Vymazat vše
     </ion-button>
   </div>
@@ -71,4 +71,21 @@
     }
   </ion-list>
   } }
+
+  <ion-alert
+    header="Vymazat celou historii?"
+    message="Všechny uložené záznamy budou trvale odstraněny. Tuto akci nelze vrátit."
+    [isOpen]="clearAlertOpen()"
+    [buttons]="clearAlertButtons"
+    (didDismiss)="onClearAlertDismissed($event)"
+  ></ion-alert>
+
+  <ion-toast
+    position="top"
+    [duration]="2000"
+    [isOpen]="toastOpen()"
+    [message]="toastMessage()"
+    [color]="toastColor()"
+    (didDismiss)="toastOpen.set(false)"
+  ></ion-toast>
 </ion-content>

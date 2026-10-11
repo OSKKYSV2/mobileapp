@@ -6,4 +6,13 @@
 
 <ion-content [fullscreen]="true" class="ion-padding">
   <app-counter heading="Nové počítadlo" (saved)="onSaved($event)"></app-counter>
+
+  <ion-toast
+    position="top"
+    [duration]="2000"
+    [isOpen]="toastOpen()"
+    [message]="toastMessage()"
+    [color]="toastColor()"
+    (didDismiss)="toastOpen.set(false)"
+  ></ion-toast>
 </ion-content>

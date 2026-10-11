@@ -107,6 +107,78 @@ describe('Tab2Page', () => {
     expect(element().textContent).toMatch(/Součet hodnot:\s*1/);
   });
 
+  describe('confirmation and feedback', () => {
+    const dismissWith = (role: string): CustomEvent<{ role: string }> =>
+      new CustomEvent('didDismiss', { detail: { role } });
+
+    it('should ask for confirmation instead of clearing immediately', async () => {
+      await createPage([first, second]);
+
+      const clearButton = element().querySelector('.history-header ion-button') as HTMLElement;
+      clearButton.click();
+      fixture.detectChanges();
+
+      expect(component.clearAlertOpen()).toBe(true);
+      expect(element().querySelector('ion-alert')).not.toBeNull();
+      expect(removeMock).not.toHaveBeenCalled();
+      expect(component.counterService.counters()).toHaveLength(2);
+    });
+
+    it('should keep the history when the confirmation is cancelled', async () => {
+      await createPage([first, second]);
+      component.requestClear();
+
+      await component.onClearAlertDismissed(dismissWith('cancel'));
+
+      expect(component.clearAlertOpen()).toBe(false);
+      expect(removeMock).not.toHaveBeenCalled();
+      expect(component.counterService.counters()).toHaveLength(2);
+      expect(component.toastOpen()).toBe(false);
+    });
+
+    it('should clear the history and show a toast when the confirmation is accepted', async () => {
+      await createPage([first, second]);
+      component.requestClear();
+
+      await component.onClearAlertDismissed(dismissWith('confirm'));
+      fixture.detectChanges();
+
+      expect(component.clearAlertOpen()).toBe(false);
+      expect(removeMock).toHaveBeenCalledWith({ key: 'saved-counters' });
+      expect(component.counterService.counters()).toEqual([]);
+      expect(component.toastOpen()).toBe(true);
+      expect(component.toastColor()).toBe('success');
+      expect(component.toastMessage()).toBe('Historie byla vymazána.');
+      expect(element().textContent).toContain('Historie je zatím prázdná.');
+    });
+
+    it('should show a toast after a single record was removed', async () => {
+      await createPage([first, second]);
+
+      await component.remove('first');
+
+      expect(component.toastOpen()).toBe(true);
+      expect(component.toastColor()).toBe('success');
+      expect(component.toastMessage()).toBe('Záznam byl odstraněn.');
+    });
+
+    it('should show an error toast when removing a record fails', async () => {
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+      try {
+        await createPage([first, second]);
+        setMock.mockRejectedValue(new Error('storage unavailable'));
+
+        await component.remove('first');
+
+        expect(component.toastColor()).toBe('danger');
+        expect(component.toastMessage()).toBe('Záznam se nepodařilo odstranit.');
+      } finally {
+        errorSpy.mockRestore();
+      }
+    });
+  });
+
   describe('search and sorting', () => {
     const third: SavedCounter = {
       id: 'third',
