@@ -65,6 +65,7 @@ describe('CounterComponent', () => {
       value: 3,
     });
     expect(emitted[0].id).toEqual(expect.any(String));
+    expect(new Date(emitted[0].createdAt).toISOString()).toBe(emitted[0].createdAt);
     expect(component.counterName).toBe('');
     expect(component.count).toBe(0);
   });
