@@ -17,6 +17,7 @@
     <div class="summary">
       <p>Počet záznamů: <strong>{{ counterService.counters().length }}</strong></p>
       <p>Součet hodnot: <strong>{{ total() }}</strong></p>
+      <p>Průměrná hodnota: <strong>{{ average() | number: '1.0-2' }}</strong></p>
     </div>
 
     <ion-button color="danger" fill="outline" size="small" (click)="requestClear()">

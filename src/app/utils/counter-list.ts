@@ -7,6 +7,15 @@ export function sumValues(counters: readonly SavedCounter[]): number {
   return counters.reduce((sum, counter) => sum + counter.value, 0);
 }
 
+/**
+ * Individuální funkce (varianta A): průměr hodnot všech počítadel.
+ * Pro prázdný seznam vrací null, protože průměr z žádných hodnot není definovaný
+ * (nesmí se dělit nulou).
+ */
+export function averageValue(counters: readonly SavedCounter[]): number | null {
+  return counters.length === 0 ? null : sumValues(counters) / counters.length;
+}
+
 /** Převede text na tvar vhodný pro porovnávání: bez diakritiky a malými písmeny. */
 function normalize(text: string): string {
   return text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();

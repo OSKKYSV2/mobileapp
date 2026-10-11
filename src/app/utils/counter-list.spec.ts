@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SavedCounter } from '../models/saved-counter';
-import { filterByName, sortCounters, sumValues } from './counter-list';
+import { averageValue, filterByName, sortCounters, sumValues } from './counter-list';
 
 function counter(id: string, name: string, value: number, createdAt: string): SavedCounter {
   return { id, name, value, createdAt };
@@ -18,6 +18,25 @@ describe('sumValues', () => {
 
   it('should add the values of all counters', () => {
     expect(sumValues(all)).toBe(17);
+  });
+});
+
+describe('averageValue', () => {
+  it('should return null for an empty list instead of dividing by zero', () => {
+    expect(averageValue([])).toBeNull();
+  });
+
+  it('should return the value of a single counter', () => {
+    expect(averageValue([pear])).toBe(12);
+  });
+
+  it('should return the arithmetic mean of all values', () => {
+    // (5 + 12 + 0) / 3
+    expect(averageValue(all)).toBeCloseTo(5.6667, 4);
+  });
+
+  it('should count counters with a zero value', () => {
+    expect(averageValue([plum, apple])).toBe(2.5);
   });
 });
 

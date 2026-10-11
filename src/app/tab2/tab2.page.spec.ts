@@ -107,6 +107,64 @@ describe('Tab2Page', () => {
     expect(element().textContent).toMatch(/Součet hodnot:\s*1/);
   });
 
+  describe('average value (individual feature, variant A)', () => {
+    const third: SavedCounter = {
+      id: 'third',
+      name: 'Třetí',
+      value: 6,
+      createdAt: '2026-09-17T10:00:00.000Z',
+    };
+
+    it('should show the average of the stored values', async () => {
+      await createPage([first, second]);
+
+      // (1 + 2) / 2 = 1,5 (oddělovač závisí na lokalizaci, v testu je výchozí en-US)
+      expect(component.average()).toBe(1.5);
+      expect(element().textContent).toMatch(/Průměrná hodnota:\s*1[.,]5/);
+    });
+
+    it('should recalculate when a record is added to the history', async () => {
+      await createPage([first, second]);
+
+      await component.counterService.add(third);
+      fixture.detectChanges();
+
+      // (1 + 2 + 6) / 3 = 3
+      expect(component.average()).toBe(3);
+      expect(element().textContent).toMatch(/Průměrná hodnota:\s*3(?![.,\d])/);
+    });
+
+    it('should recalculate when a record is removed', async () => {
+      await createPage([first, second, third]);
+
+      await component.remove('third');
+      fixture.detectChanges();
+
+      expect(component.average()).toBe(1.5);
+      expect(element().textContent).toMatch(/Průměrná hodnota:\s*1[.,]5/);
+    });
+
+    it('should not be affected by the search filter', async () => {
+      await createPage([first, second]);
+
+      component.searchTerm.set('První');
+      fixture.detectChanges();
+
+      expect(component.visibleCounters()).toHaveLength(1);
+      expect(component.average()).toBe(1.5);
+    });
+
+    it('should be undefined and hidden when the history is empty', async () => {
+      await createPage([first, second]);
+
+      await component.clear();
+      fixture.detectChanges();
+
+      expect(component.average()).toBeNull();
+      expect(element().textContent).not.toContain('Průměrná hodnota');
+    });
+  });
+
   describe('confirmation and feedback', () => {
     const dismissWith = (role: string): CustomEvent<{ role: string }> =>
       new CustomEvent('didDismiss', { detail: { role } });

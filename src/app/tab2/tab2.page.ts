@@ -1,4 +1,4 @@
-import { DatePipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
@@ -20,7 +20,13 @@ import {
   IonToolbar,
 } from '@ionic/angular';
 import { CounterService } from '../services/counter.service';
-import { filterByName, SortOrder, sortCounters, sumValues } from '../utils/counter-list';
+import {
+  averageValue,
+  filterByName,
+  SortOrder,
+  sortCounters,
+  sumValues,
+} from '../utils/counter-list';
 
 @Component({
   selector: 'app-tab2',
@@ -28,6 +34,7 @@ import { filterByName, SortOrder, sortCounters, sumValues } from '../utils/count
   styleUrls: ['tab2.page.scss'],
   imports: [
     DatePipe,
+    DecimalPipe,
     FormsModule,
     IonAlert,
     IonButton,
@@ -72,6 +79,10 @@ export class Tab2Page implements OnInit {
 
   // Součet se počítá ze všech záznamů, hledání ho neovlivňuje.
   readonly total = computed(() => sumValues(this.counterService.counters()));
+
+  // Individuální funkce (varianta A): průměr hodnot uložených počítadel.
+  // Je odvozený ze signálu služby, takže se sám přepočítá po přidání, odstranění i vymazání.
+  readonly average = computed(() => averageValue(this.counterService.counters()));
 
   readonly visibleCounters = computed(() =>
     sortCounters(filterByName(this.counterService.counters(), this.searchTerm()), this.sortOrder()),
